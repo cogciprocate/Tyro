@@ -1,0 +1,11 @@
+[package]
+name = "tyro"
+version = "0.1.0"
+authors = ["Nick Sanders <cogciprocate@gmail.com>"]
+
+[dependencies]
+
+
+[dependencies.bismit]
+path = "/home/nick/projects/bismit"
+# git = "https://github.com/cogciprocate/bismit.git"
