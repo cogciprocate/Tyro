@@ -3,8 +3,12 @@ name = "tyro"
 version = "0.1.0"
 authors = ["Nick Sanders <cogciprocate@gmail.com>"]
 
-[dependencies]
+[lib]
+name = "tyro"
+crate-type = ["dylib", "rlib"]
+# crate-type = ["staticlib"]
 
+[dependencies]
 
 [dependencies.bismit]
 path = "/home/nick/projects/bismit"
