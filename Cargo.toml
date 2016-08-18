@@ -9,6 +9,12 @@ crate-type = ["dylib", "rlib"]
 # crate-type = ["staticlib"]
 
 [dependencies]
+enum_primitive = "*"
+libc = "*"
+
+[replace]
+"cl-sys:0.1.0" = { git = 'https://github.com/cogciprocate/cl-sys' }
+"ocl-core:0.1.0" = { git = "https://github.com/cogciprocate/ocl-core" }
 
 [dependencies.bismit]
 path = "/home/nick/projects/bismit"

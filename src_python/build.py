@@ -6,7 +6,9 @@ ffibuilder.set_source("_libtyro",
     """
         typedef void** Tyro;
 
-        void hello(int a);
+        void print_int(int);
+        void print_array_f64(double[], int);
+        void print_array(double[], int[], int);
         Tyro new_tyro(void);
         int add_100(Tyro, int);
         float add_reward(Tyro, float);
@@ -19,7 +21,9 @@ ffibuilder.set_source("_libtyro",
 ffibuilder.cdef("""
     typedef void** Tyro;
 
-    void hello(int a);
+    void print_int(int);
+    void print_array_f64(double[], int);
+    void print_array(double[], int[], int);
     Tyro new_tyro(void);
     int add_100(Tyro, int);
     float add_reward(Tyro, float);

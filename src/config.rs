@@ -5,7 +5,7 @@ use bismit::map::{self, LayerTags, LayerMapKind, LayerMapScheme, LayerMapSchemeL
 //     Cortical, Thalamic, Protocell, Protofilter, Protoinput};
 
 /* Eventually move defines to a config file or some such */
-pub fn define_plmaps() -> LayerMapSchemeList {
+pub fn define_lm_schemes() -> LayerMapSchemeList {
     const MOTOR_UID: u32 = 543;
     // const OLFAC_UID: u32 = 654;
 
@@ -41,12 +41,12 @@ pub fn define_plmaps() -> LayerMapSchemeList {
 }
 
 
-pub fn define_pamaps() -> AreaSchemeList {
+pub fn define_a_schemes() -> AreaSchemeList {
     // const CYCLES_PER_FRAME: usize = 1;
     // const HZS: u32 = 16;
-    const ENCODE_SIZE: u32 = 48; // had been used for GlyphSequences
-    // const ENCODE_SIZE: u32 = 24; // for SensoryTract
-    const AREA_SIDE: u32 = 64;
+    // const ENCODE_SIZE: u32 = 48; // had been used for GlyphSequences
+    const ENCODE_SIZE: u32 = 24; // for SensoryTract
+    const AREA_SIDE: u32 = 32;
 
     AreaSchemeList::new()
         // .area_ext("v0", "v0_lm", ENCODE_SIZE,
