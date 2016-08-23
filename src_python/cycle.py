@@ -1,71 +1,74 @@
 # from enum import Enum
+import numpy as np
 from _libtyro import ffi, lib as libtyro
 import gym
+from tyro import Tyro, TYPEID_FLOAT32, TYPEID_FLOAT64, TYPEID_INT32, TYPEID_INT64
 
-# Declare type "constants" (for ffi):
-TYPEID_FLOAT32 = 0 # float
-TYPEID_FLOAT64 = 1 # double
-TYPEID_INT32   = 2 # int
-TYPEID_INT64   = 3 # long
 
 print('Creating new Tyro...')
-tyro = ffi.new('Tyro', libtyro.new_tyro())
+with Tyro() as tyro:
+    # print('Warming up Tyro...')
+    # assert tyro.add_100(999199) == 999299
 
-print('Warming up Tyro...')
-assert libtyro.add_100(tyro[0], 999199) == 999299
+    # Reward cumulitive sum:
+    ttl_reward = 0.0
 
-# Reward cumulitive sum:
-ttl_reward = 0.0
+    # env = gym.make('CartPole-v0')
+    # env = gym.make('LunarLander-v2')
+    # env = gym.make('FrozenLake-v0')
+    env = gym.make('Pendulum-v0')
 
-# env = gym.make('CartPole-v0')
-# env = gym.make('LunarLander-v2')
-# env = gym.make('FrozenLake-v0')
-env = gym.make('Pendulum-v0')
+    # Set delta-t:
+    env.dt = .006
 
-# Set delta-t:
-env.dt = .006
+    print("Action space: {}".format(env.action_space))
+    print("Observation space: {}".format(env.observation_space))
 
-print("Action space: {}".format(env.action_space))
-print("Observation space: {}".format(env.observation_space))
+    print('Running Simulation...\n')
 
-print('Running Simulation...\n')
+    for i_episode in range(1):
+        observation = env.reset()
+        episode_reward = 0.0
 
-for i_episode in range(1):
-    observation = env.reset()
-    episode_reward = 0.0
+        for t in range(30):
+            env.render()
+            # print("Observation as {}: {}".format(type(observation), observation))
 
-    for t in range(30):
-        env.render()
-        print("Observation as {}: {}".format(type(observation), observation))
+            # obs_list = observation.tolist()
+            # print("Observation as list: {}".format(obs_list))
 
-        # obs_list = observation.tolist()
-        # print("Observation as list: {}".format(obs_list))
+            # obs_tuple = tuple(obs_list)
+            # print("Observation as tuple: {}".format(obs_list))
 
-        # obs_tuple = tuple(obs_list)
-        # print("Observation as tuple: {}".format(obs_list))
+            # obs_ctype = ffi.new("double[4]", obs_tuple)
+            # tyro.print_array(obs_ctype)
 
-        # obs_ctype = ffi.new("double[4]", obs_tuple)
-        # libtyro.print_array(obs_ctype)
+            # obs_ptr = ffi.cast("double*", observation.ctypes.data)
+            # dims = np.array([observation.size, 1])
+            # dims_ptr = ffi.cast("long*", dims.ctypes.data)
+            # print(dims.dtype)
+            # print(dims)
+            # tyro.print_array(obs_ptr, TYPEID_FLOAT64, dims_ptr)
+            tyro.print_observation(observation)
+            tyro.push_observation(observation)
+            tyro.cycle()
+
+            action = env.action_space.sample()
+            print("Taking action: {}".format(action))
+            observation, reward, done, info = env.step(action)
+
+            ttl_reward += reward
+            tyro.add_reward(reward)
+            episode_reward += reward
+
+            if done:
+                print("Episode {} finished after {} timesteps with reward {}\n"
+                    .format(i_episode, t + 1, episode_reward))
+                break
 
 
-        libtyro.print_array(ffi.cast("double*", observation.ctypes.data), 
-            observation.size, TYPEID_FLOAT64)
+    print('Total reward is: {} ({})'.format(tyro.get_reward(), ttl_reward))
+    assert (tyro.get_reward() - ttl_reward) < 0.001
 
-        action = env.action_space.sample()
-        print("Taking action: {}".format(action))
-        observation, reward, done, info = env.step(action)
-
-        ttl_reward += reward
-        libtyro.add_reward(tyro[0], reward)
-        episode_reward += reward
-
-        if done:
-            print("Episode {} finished after {} timesteps with reward {}\n".format(i_episode, t + 1, episode_reward))
-            break
-
-
-print('Total reward is: {} ({})'.format(libtyro.get_reward(tyro[0]), ttl_reward))
-assert (libtyro.get_reward(tyro[0]) - ttl_reward) < 0.0001
-
-# Return threads and drop:
-libtyro.drop_tyro(tyro[0])
+    # # Return threads and drop:
+    # libtyro.drop_tyro(tyro[0])

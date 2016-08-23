@@ -5,17 +5,18 @@ authors = ["Nick Sanders <cogciprocate@gmail.com>"]
 
 [lib]
 name = "tyro"
-crate-type = ["dylib", "rlib"]
+crate-type = ["cdylib", "rlib"]
 # crate-type = ["staticlib"]
+
+[dependencies.bismit]
+path = "/home/nick/src/github.com/cogciprocate/bismit"
+# git = "https://github.com/cogciprocate/bismit.git"
 
 [dependencies]
 enum_primitive = "*"
 libc = "*"
+num = "*"
 
 [replace]
 "cl-sys:0.1.0" = { git = 'https://github.com/cogciprocate/cl-sys' }
 "ocl-core:0.1.0" = { git = "https://github.com/cogciprocate/ocl-core" }
-
-[dependencies.bismit]
-path = "/home/nick/projects/bismit"
-# git = "https://github.com/cogciprocate/bismit.git"

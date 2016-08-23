@@ -2,15 +2,17 @@
 
 #[macro_use] extern crate enum_primitive;
 extern crate libc;
+extern crate num;
 extern crate bismit;
 
 // use libc::c_void;
 use std::fmt::Debug;
 use std::thread::{self, JoinHandle};
-use std::sync::mpsc::{self, Sender, Receiver};
+use std::sync::mpsc::{self, Sender, SyncSender, Receiver};
+use num::ToPrimitive;
 use enum_primitive::FromPrimitive;
 use bismit::{LayerMapSchemeList, AreaSchemeList, TypeId};
-use bismit::flywheel::{Flywheel, Command, Request, Response};
+use bismit::flywheel::{Flywheel, Command, Request, Response, SensoryFrame, MotorFrame};
 
 pub mod config;
 
@@ -22,26 +24,25 @@ pub struct Tyro {
     command_tx: Sender<Command>,
     request_tx: Sender<Request>,
     response_rx: Receiver<Response>,
+    sensory_tx: SyncSender<SensoryFrame>,
+    motor_rx: Receiver<MotorFrame>,
 }
 
 impl Tyro {
     pub fn new(lm_schemes: LayerMapSchemeList, a_schemes: AreaSchemeList) -> Tyro {
-        // let (command_tx, control_rx) = mpsc::channel();
-        // let (result_tx, response_rx) = mpsc::channel();
-
-        // let th_flywheel = thread::Builder::new().name("tyro::flywheel".to_string()).spawn(move || {
-        //     let mut flywheel = flywheel::Flywheel::new(lm_schemes, a_schemes, control_rx, result_tx);
-        //     flywheel.spin();
-        // }).expect("Error creating 'flywheel' thread");
-
         let (command_tx, command_rx) = mpsc::channel();
         let (request_tx, request_rx) = mpsc::channel();
         let (response_tx, response_rx) = mpsc::channel();
+        let (sensory_tx, sensory_rx) = mpsc::sync_channel(1);
+        let (motor_tx, motor_rx) = mpsc::sync_channel(1);
 
         let th_flywheel = thread::Builder::new().name("flywheel".to_string()).spawn(move || {
             let mut flywheel = Flywheel::from_blueprint(command_rx, lm_schemes,
                 a_schemes, None);
             flywheel.add_req_res_pair(request_rx, response_tx);
+            // flywheel.add_sen_mot_pair(sensory_rx, motor_tx);
+            flywheel.add_sensory_rx(sensory_rx, "v0b".to_owned());
+            flywheel.add_motor_tx(motor_tx);
             flywheel.spin();
         }).expect("Error creating 'flywheel' thread");
 
@@ -58,6 +59,8 @@ impl Tyro {
             command_tx: command_tx,
             request_tx: request_tx,
             response_rx: response_rx,
+            sensory_tx: sensory_tx,
+            motor_rx: motor_rx,
         }
     }
 
@@ -66,12 +69,8 @@ impl Tyro {
         Tyro::new(config::define_lm_schemes(), config::define_a_schemes())
     }
 
-    pub fn cycle(&mut self) {
-        self.command_tx.send(Command::Iterate(0)).unwrap()
-    }
-
-    pub fn add_100(&self, a: i32) -> i32 {
-        a + 100
+    pub fn cycle(&self) {
+        self.command_tx.send(Command::Iterate(1)).unwrap()
     }
 
     pub fn add_reward(&mut self, reward: f32) -> f32 {
@@ -83,7 +82,19 @@ impl Tyro {
         self.reward
     }
 
-    // pub fn motor(&self) ->
+    pub fn push_vec_frame(&self, ptr: *const libc::c_void, type_id: i32, dims: &[i64; 2]) {
+        let len = (dims[0] * dims[1]) as usize;
+
+        let f32_array16 = match TypeId::from_i32(type_id).expect("print_array(): Invalid type_id.") {
+            TypeId::Float32 => to_f32_arr(ptr as *const f32, len),
+            TypeId::Float64 => to_f32_arr(ptr as *const f64, len),
+            TypeId::Int32 => to_f32_arr(ptr as *const i32, len),
+            TypeId::Int64 => to_f32_arr(ptr as *const i64, len),
+        };
+
+        self.sensory_tx.send(SensoryFrame::F32Array16(f32_array16)).unwrap();
+    }
+
 }
 
 impl Default for Tyro {
@@ -107,6 +118,17 @@ impl Drop for Tyro {
 // ############# MISC STUFF #################
 // ##########################################
 
+fn to_f32_arr<T: ToPrimitive>(ptr: *const T, len: usize) -> [f32; 16] {
+    let slice = unsafe { std::slice::from_raw_parts(ptr, len) };
+    let mut f32_array16 = [0.0f32; 16];
+
+    for (i, val) in slice.iter().enumerate() {
+        f32_array16[i] = val.to_f32().unwrap_or(0.0);
+    }
+
+    f32_array16
+}
+
 fn print_something<T: Debug>(ptr: *const T, len: usize) {
     let slice = unsafe { std::slice::from_raw_parts(ptr, len) };
     println!("Array Value: {:?}", slice);
@@ -118,10 +140,22 @@ fn print_something<T: Debug>(ptr: *const T, len: usize) {
 // ##########################################
 
 #[no_mangle]
-pub extern "C" fn print_array(ptr: *const libc::c_void, dims: [i32; 2], type_id: i32) {
+pub extern "C" fn push_vec_frame(tyro: &Tyro, ptr: *const libc::c_void, type_id: i32,
+            dims: &[i64; 2]) {
+    tyro.push_vec_frame(ptr, type_id, dims);
+}
+
+#[no_mangle]
+pub extern "C" fn cycle(tyro: &Tyro) {
+    tyro.cycle();
+}
+
+#[no_mangle]
+pub extern "C" fn print_array(ptr: *const libc::c_void, type_id: i32, dims: &[i64; 2]) {
+    // println!("print_array(): dims: {:?}", dims);
     let len = (dims[0] * dims[1]) as usize;
 
-    let ptr_typed = match TypeId::from_i32(type_id).unwrap() {
+    let ptr_typed = match TypeId::from_i32(type_id).expect("print_array(): Invalid type_id.") {
         TypeId::Float32 => print_something(ptr as *const f32, len),
         TypeId::Float64 => print_something(ptr as *const f64, len),
         TypeId::Int32 => print_something(ptr as *const i32, len),
@@ -141,6 +175,7 @@ pub extern "C" fn send_input(ptr: *const libc::c_void, dims: [i32; 2], type_id: 
 
 #[no_mangle]
 pub extern "C" fn add_reward(tyro: &mut Tyro, reward: f32) -> f32 {
+    println!("Adding reward: {}", reward);
     tyro.add_reward(reward)
 }
 
@@ -173,5 +208,5 @@ pub extern "C" fn print_array_f64(p: *const f64, len: i32) {
 
 #[no_mangle]
 pub extern "C" fn add_100(tyro: &Tyro, a: i32) -> i32 {
-    tyro.add_100(a)
+    a + 100
 }

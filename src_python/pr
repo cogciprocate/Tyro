@@ -1,7 +1,12 @@
 #!/bin/bash
+# Leave the 'rm' statements to catch failures.
+
+LIBTYRO_SRC=../target/release/libtyro.so
+LIBTYRO_DST=/opt/lib/tyro/libtyro.so.0.1.0
+
 cargo build --release
 rm ./_libtyro.*
-sudo rm -f usr/local/lib/libtyro.so
-sudo cp ../target/release/libtyro.so /usr/local/lib
+rm $LIBTYRO_DST
+cp $LIBTYRO_SRC $LIBTYRO_DST
 python build.py
 python cycle.py

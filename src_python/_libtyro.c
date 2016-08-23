@@ -427,14 +427,15 @@ static void (*_cffi_call_python_org)(struct _cffi_externpy_s *, char *);
 
 
         typedef void** Tyro;
-
-        void print_int(int);
-        void print_array_f64(double[], int);
-        void print_array(double[], int, int);
+        
         Tyro new_tyro(void);
-        int add_100(Tyro, int);
+        void push_vec_frame(Tyro, void*, int, long[2]);
+        void cycle(Tyro);
+        void print_array_f64(double[], int);
+        void print_array(double[], int, long[2]);
         float add_reward(Tyro, float);
         float get_reward(Tyro);
+        int add_100(Tyro, int);
         void drop_tyro(Tyro);
     
 
@@ -442,7 +443,7 @@ static void (*_cffi_call_python_org)(struct _cffi_externpy_s *, char *);
 
 static void *_cffi_types[] = {
 /*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 5), // float()(void * *)
-/*  1 */ _CFFI_OP(_CFFI_OP_POINTER, 29), // void * *
+/*  1 */ _CFFI_OP(_CFFI_OP_POINTER, 27), // void * *
 /*  2 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
 /*  3 */ _CFFI_OP(_CFFI_OP_FUNCTION, 5), // float()(void * *, float)
 /*  4 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
@@ -454,24 +455,27 @@ static void *_cffi_types[] = {
 /* 10 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
 /* 11 */ _CFFI_OP(_CFFI_OP_FUNCTION, 1), // void * *()(void)
 /* 12 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 13 */ _CFFI_OP(_CFFI_OP_FUNCTION, 30), // void()(double *, int)
-/* 14 */ _CFFI_OP(_CFFI_OP_POINTER, 28), // double *
+/* 13 */ _CFFI_OP(_CFFI_OP_FUNCTION, 33), // void()(double *, int)
+/* 14 */ _CFFI_OP(_CFFI_OP_POINTER, 31), // double *
 /* 15 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
 /* 16 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 17 */ _CFFI_OP(_CFFI_OP_FUNCTION, 30), // void()(double *, int, int)
+/* 17 */ _CFFI_OP(_CFFI_OP_FUNCTION, 33), // void()(double *, int, long *)
 /* 18 */ _CFFI_OP(_CFFI_OP_NOOP, 14),
 /* 19 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
-/* 20 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 20 */ _CFFI_OP(_CFFI_OP_POINTER, 32), // long *
 /* 21 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 22 */ _CFFI_OP(_CFFI_OP_FUNCTION, 30), // void()(int)
-/* 23 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 22 */ _CFFI_OP(_CFFI_OP_FUNCTION, 33), // void()(void * *)
+/* 23 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
 /* 24 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 25 */ _CFFI_OP(_CFFI_OP_FUNCTION, 30), // void()(void * *)
+/* 25 */ _CFFI_OP(_CFFI_OP_FUNCTION, 33), // void()(void * *, void *, int, long *)
 /* 26 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
-/* 27 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 28 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14), // double
-/* 29 */ _CFFI_OP(_CFFI_OP_POINTER, 30), // void *
-/* 30 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
+/* 27 */ _CFFI_OP(_CFFI_OP_POINTER, 33), // void *
+/* 28 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 29 */ _CFFI_OP(_CFFI_OP_NOOP, 20),
+/* 30 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 31 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14), // double
+/* 32 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 9), // long
+/* 33 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
 };
 
 static int _cffi_d_add_100(void * * x0, int x1)
@@ -574,6 +578,42 @@ _cffi_f_add_reward(PyObject *self, PyObject *args)
 #  define _cffi_f_add_reward _cffi_d_add_reward
 #endif
 
+static void _cffi_d_cycle(void * * x0)
+{
+  cycle(x0);
+}
+#ifndef PYPY_VERSION
+static PyObject *
+_cffi_f_cycle(PyObject *self, PyObject *arg0)
+{
+  void * * x0;
+  Py_ssize_t datasize;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(1), arg0, (char **)&x0);
+  if (datasize != 0) {
+    if (datasize < 0)
+      return NULL;
+    x0 = (void * *)alloca((size_t)datasize);
+    memset((void *)x0, 0, (size_t)datasize);
+    if (_cffi_convert_array_from_object((char *)x0, _cffi_type(1), arg0) < 0)
+      return NULL;
+  }
+
+  Py_BEGIN_ALLOW_THREADS
+  _cffi_restore_errno();
+  { cycle(x0); }
+  _cffi_save_errno();
+  Py_END_ALLOW_THREADS
+
+  (void)self; /* unused */
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+#else
+#  define _cffi_f_cycle _cffi_d_cycle
+#endif
+
 static void _cffi_d_drop_tyro(void * * x0)
 {
   drop_tyro(x0);
@@ -670,7 +710,7 @@ _cffi_f_new_tyro(PyObject *self, PyObject *noarg)
 #  define _cffi_f_new_tyro _cffi_d_new_tyro
 #endif
 
-static void _cffi_d_print_array(double * x0, int x1, int x2)
+static void _cffi_d_print_array(double * x0, int x1, long * x2)
 {
   print_array(x0, x1, x2);
 }
@@ -680,7 +720,7 @@ _cffi_f_print_array(PyObject *self, PyObject *args)
 {
   double * x0;
   int x1;
-  int x2;
+  long * x2;
   Py_ssize_t datasize;
   PyObject *arg0;
   PyObject *arg1;
@@ -709,9 +749,16 @@ _cffi_f_print_array(PyObject *self, PyObject *args)
   if (x1 == (int)-1 && PyErr_Occurred())
     return NULL;
 
-  x2 = _cffi_to_c_int(arg2, int);
-  if (x2 == (int)-1 && PyErr_Occurred())
-    return NULL;
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(20), arg2, (char **)&x2);
+  if (datasize != 0) {
+    if (datasize < 0)
+      return NULL;
+    x2 = (long *)alloca((size_t)datasize);
+    memset((void *)x2, 0, (size_t)datasize);
+    if (_cffi_convert_array_from_object((char *)x2, _cffi_type(20), arg2) < 0)
+      return NULL;
+  }
 
   Py_BEGIN_ALLOW_THREADS
   _cffi_restore_errno();
@@ -777,23 +824,73 @@ _cffi_f_print_array_f64(PyObject *self, PyObject *args)
 #  define _cffi_f_print_array_f64 _cffi_d_print_array_f64
 #endif
 
-static void _cffi_d_print_int(int x0)
+static void _cffi_d_push_vec_frame(void * * x0, void * x1, int x2, long * x3)
 {
-  print_int(x0);
+  push_vec_frame(x0, x1, x2, x3);
 }
 #ifndef PYPY_VERSION
 static PyObject *
-_cffi_f_print_int(PyObject *self, PyObject *arg0)
+_cffi_f_push_vec_frame(PyObject *self, PyObject *args)
 {
-  int x0;
+  void * * x0;
+  void * x1;
+  int x2;
+  long * x3;
+  Py_ssize_t datasize;
+  PyObject *arg0;
+  PyObject *arg1;
+  PyObject *arg2;
+  PyObject *arg3;
+  PyObject **aa;
 
-  x0 = _cffi_to_c_int(arg0, int);
-  if (x0 == (int)-1 && PyErr_Occurred())
+  aa = _cffi_unpack_args(args, 4, "push_vec_frame");
+  if (aa == NULL)
     return NULL;
+  arg0 = aa[0];
+  arg1 = aa[1];
+  arg2 = aa[2];
+  arg3 = aa[3];
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(1), arg0, (char **)&x0);
+  if (datasize != 0) {
+    if (datasize < 0)
+      return NULL;
+    x0 = (void * *)alloca((size_t)datasize);
+    memset((void *)x0, 0, (size_t)datasize);
+    if (_cffi_convert_array_from_object((char *)x0, _cffi_type(1), arg0) < 0)
+      return NULL;
+  }
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(27), arg1, (char **)&x1);
+  if (datasize != 0) {
+    if (datasize < 0)
+      return NULL;
+    x1 = (void *)alloca((size_t)datasize);
+    memset((void *)x1, 0, (size_t)datasize);
+    if (_cffi_convert_array_from_object((char *)x1, _cffi_type(27), arg1) < 0)
+      return NULL;
+  }
+
+  x2 = _cffi_to_c_int(arg2, int);
+  if (x2 == (int)-1 && PyErr_Occurred())
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(20), arg3, (char **)&x3);
+  if (datasize != 0) {
+    if (datasize < 0)
+      return NULL;
+    x3 = (long *)alloca((size_t)datasize);
+    memset((void *)x3, 0, (size_t)datasize);
+    if (_cffi_convert_array_from_object((char *)x3, _cffi_type(20), arg3) < 0)
+      return NULL;
+  }
 
   Py_BEGIN_ALLOW_THREADS
   _cffi_restore_errno();
-  { print_int(x0); }
+  { push_vec_frame(x0, x1, x2, x3); }
   _cffi_save_errno();
   Py_END_ALLOW_THREADS
 
@@ -802,18 +899,19 @@ _cffi_f_print_int(PyObject *self, PyObject *arg0)
   return Py_None;
 }
 #else
-#  define _cffi_f_print_int _cffi_d_print_int
+#  define _cffi_f_push_vec_frame _cffi_d_push_vec_frame
 #endif
 
 static const struct _cffi_global_s _cffi_globals[] = {
   { "add_100", (void *)_cffi_f_add_100, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 7), (void *)_cffi_d_add_100 },
   { "add_reward", (void *)_cffi_f_add_reward, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 3), (void *)_cffi_d_add_reward },
-  { "drop_tyro", (void *)_cffi_f_drop_tyro, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 25), (void *)_cffi_d_drop_tyro },
+  { "cycle", (void *)_cffi_f_cycle, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 22), (void *)_cffi_d_cycle },
+  { "drop_tyro", (void *)_cffi_f_drop_tyro, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 22), (void *)_cffi_d_drop_tyro },
   { "get_reward", (void *)_cffi_f_get_reward, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 0), (void *)_cffi_d_get_reward },
   { "new_tyro", (void *)_cffi_f_new_tyro, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_N, 11), (void *)_cffi_d_new_tyro },
   { "print_array", (void *)_cffi_f_print_array, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 17), (void *)_cffi_d_print_array },
   { "print_array_f64", (void *)_cffi_f_print_array_f64, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 13), (void *)_cffi_d_print_array_f64 },
-  { "print_int", (void *)_cffi_f_print_int, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 22), (void *)_cffi_d_print_int },
+  { "push_vec_frame", (void *)_cffi_f_push_vec_frame, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 25), (void *)_cffi_d_push_vec_frame },
 };
 
 static const struct _cffi_typename_s _cffi_typenames[] = {
@@ -827,12 +925,12 @@ static const struct _cffi_type_context_s _cffi_type_context = {
   NULL,  /* no struct_unions */
   NULL,  /* no enums */
   _cffi_typenames,
-  8,  /* num_globals */
+  9,  /* num_globals */
   0,  /* num_struct_unions */
   0,  /* num_enums */
   1,  /* num_typenames */
   NULL,  /* no includes */
-  31,  /* num_types */
+  34,  /* num_types */
   0,  /* flags */
 };
 
