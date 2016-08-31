@@ -13,16 +13,17 @@ with Tyro() as tyro:
     # Reward cumulitive sum:
     ttl_reward = 0.0
 
-    # env = gym.make('CartPole-v0')
+    env = gym.make('CartPole-v0')
     # env = gym.make('LunarLander-v2')
     # env = gym.make('FrozenLake-v0')
-    env = gym.make('Pendulum-v0')
+    # env = gym.make('Pendulum-v0')
 
     # Set delta-t:
     env.dt = .006
 
     print("Action space: {}".format(env.action_space))
-    print("Observation space: {}".format(env.observation_space))
+    print("Observation space: {} ({}, {})".format(env.observation_space, env.observation_space.low,
+        env.observation_space.high))
 
     print('Running Simulation...\n')
 
@@ -30,7 +31,7 @@ with Tyro() as tyro:
         observation = env.reset()
         episode_reward = 0.0
 
-        for t in range(30):
+        for t in range(300000):
             env.render()
             # print("Observation as {}: {}".format(type(observation), observation))
 
@@ -43,23 +44,19 @@ with Tyro() as tyro:
             # obs_ctype = ffi.new("double[4]", obs_tuple)
             # tyro.print_array(obs_ctype)
 
-            # obs_ptr = ffi.cast("double*", observation.ctypes.data)
-            # dims = np.array([observation.size, 1])
-            # dims_ptr = ffi.cast("long*", dims.ctypes.data)
-            # print(dims.dtype)
-            # print(dims)
-            # tyro.print_array(obs_ptr, TYPEID_FLOAT64, dims_ptr)
-            tyro.print_observation(observation)
+            # tyro.print_observation(observation)
             tyro.push_observation(observation)
             tyro.cycle()
 
             action = env.action_space.sample()
-            print("Taking action: {}".format(action))
+            # print("Taking action: {}".format(action))
             observation, reward, done, info = env.step(action)
 
             ttl_reward += reward
             tyro.add_reward(reward)
             episode_reward += reward
+
+            # TODO: Check tyro exit status (if it's exiting).
 
             if done:
                 print("Episode {} finished after {} timesteps with reward {}\n"
@@ -69,6 +66,4 @@ with Tyro() as tyro:
 
     print('Total reward is: {} ({})'.format(tyro.get_reward(), ttl_reward))
     assert (tyro.get_reward() - ttl_reward) < 0.001
-
-    # # Return threads and drop:
-    # libtyro.drop_tyro(tyro[0])
+    

@@ -1,0 +1,1 @@
+A Python -> Rust wrapper for [bismit](https://github.com/cogciprocate/bismit)

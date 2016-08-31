@@ -3,12 +3,15 @@
 #[macro_use] extern crate enum_primitive;
 extern crate libc;
 extern crate num;
-extern crate bismit;
+extern crate vibi;
+// extern crate bismit;
+
+pub use vibi::bismit;
 
 // use libc::c_void;
 use std::fmt::Debug;
 use std::thread::{self, JoinHandle};
-use std::sync::mpsc::{self, Sender, SyncSender, Receiver};
+use std::sync::mpsc::{self, Sender, SyncSender, Receiver, TryRecvError};
 use num::ToPrimitive;
 use enum_primitive::FromPrimitive;
 use bismit::{LayerMapSchemeList, AreaSchemeList, TypeId};
@@ -36,15 +39,24 @@ impl Tyro {
         let (sensory_tx, sensory_rx) = mpsc::sync_channel(1);
         let (motor_tx, motor_rx) = mpsc::sync_channel(1);
 
+        let command_tx_vibi = command_tx.clone();
+        let (request_tx_vibi, request_rx_vibi) = mpsc::channel();
+        let (response_tx_vibi, response_rx_vibi) = mpsc::channel();
+
         let th_flywheel = thread::Builder::new().name("flywheel".to_string()).spawn(move || {
             let mut flywheel = Flywheel::from_blueprint(command_rx, lm_schemes,
                 a_schemes, None);
             flywheel.add_req_res_pair(request_rx, response_tx);
+            flywheel.add_req_res_pair(request_rx_vibi, response_tx_vibi);
             // flywheel.add_sen_mot_pair(sensory_rx, motor_tx);
             flywheel.add_sensory_rx(sensory_rx, "v0b".to_owned());
             flywheel.add_motor_tx(motor_tx);
             flywheel.spin();
         }).expect("Error creating 'flywheel' thread");
+
+        let th_win = thread::Builder::new().name("vibi".to_string()).spawn(move || {
+            vibi::window::Window::open(command_tx_vibi, request_tx_vibi, response_rx_vibi);
+        }).expect("Error creating 'vibi' thread");
 
         // Wait for the flywheel to initialize bismit:
         request_tx.send(Request::CurrentIter).unwrap();
@@ -70,6 +82,21 @@ impl Tyro {
     }
 
     pub fn cycle(&self) {
+        loop {
+            match self.response_rx.try_recv() {
+                Ok(r) => {
+                        match r {
+                            _ => (),
+                        }
+                    }
+                    Err(e) => match e {
+                        TryRecvError::Empty => break,
+                        TryRecvError::Disconnected => panic!("Tyro::cycle(): \
+                            Flywheel disconnected."),
+                    },
+            }
+        }
+
         self.command_tx.send(Command::Iterate(1)).unwrap()
     }
 
@@ -175,7 +202,7 @@ pub extern "C" fn send_input(ptr: *const libc::c_void, dims: [i32; 2], type_id: 
 
 #[no_mangle]
 pub extern "C" fn add_reward(tyro: &mut Tyro, reward: f32) -> f32 {
-    println!("Adding reward: {}", reward);
+    // println!("Adding reward: {}", reward);
     tyro.add_reward(reward)
 }
 

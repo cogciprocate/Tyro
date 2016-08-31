@@ -13,6 +13,7 @@ path = "/home/nick/src/github.com/cogciprocate/bismit"
 # git = "https://github.com/cogciprocate/bismit.git"
 
 [dependencies]
+vibi = { path = "/home/nick/src/github.com/cogciprocate/vibi" }
 enum_primitive = "*"
 libc = "*"
 num = "*"
