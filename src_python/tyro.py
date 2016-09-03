@@ -24,6 +24,12 @@ class Tyro(object):
         type_id = TYPEID_FLOAT64        
         lib.push_vec_frame(self._ptr[0], obs_ptr, type_id, dims_ptr)
 
+    def set_encoder_ranges(self, lo, hi):
+        assert len(lo) == len(hi)
+        lo_ptr = ffi.cast("double*", lo.ctypes.data)
+        hi_ptr = ffi.cast("double*", hi.ctypes.data)
+        lib.set_encoder_ranges(self._ptr[0], lo_ptr, hi_ptr, len(lo))
+
     def cycle(self):
         lib.cycle(self._ptr[0])
 

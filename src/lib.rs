@@ -8,14 +8,17 @@ extern crate vibi;
 
 pub use vibi::bismit;
 
-// use libc::c_void;
+// use c_void;
+use libc::c_void;
 use std::fmt::Debug;
 use std::thread::{self, JoinHandle};
+use std::sync::{Arc, Mutex};
 use std::sync::mpsc::{self, Sender, SyncSender, Receiver, TryRecvError};
 use num::ToPrimitive;
 use enum_primitive::FromPrimitive;
 use bismit::{LayerMapSchemeList, AreaSchemeList, TypeId};
-use bismit::flywheel::{Flywheel, Command, Request, Response, SensoryFrame, MotorFrame};
+use bismit::flywheel::{Flywheel, Command, Request, Response, SensoryFrame, MotorFrame,
+    PathwayConfig};
 
 pub mod config;
 
@@ -109,7 +112,7 @@ impl Tyro {
         self.reward
     }
 
-    pub fn push_vec_frame(&self, ptr: *const libc::c_void, type_id: i32, dims: &[i64; 2]) {
+    pub fn push_vec_frame(&self, ptr: *const c_void, type_id: i32, dims: &[i64; 2]) {
         let len = (dims[0] * dims[1]) as usize;
 
         let f32_array16 = match TypeId::from_i32(type_id).expect("print_array(): Invalid type_id.") {
@@ -122,6 +125,21 @@ impl Tyro {
         self.sensory_tx.send(SensoryFrame::F32Array16(f32_array16)).unwrap();
     }
 
+    pub fn set_encoder_ranges(&self, lo_ptr: *const f64, hi_ptr: *const f64, len: usize) {
+        let mut ranges = Vec::with_capacity(len);
+        let lo = unsafe { std::slice::from_raw_parts(lo_ptr, len) };
+        let hi = unsafe { std::slice::from_raw_parts(hi_ptr, len) };
+
+        for i in 0..len {
+            ranges.push((lo[i] as f32, hi[i] as f32));
+        }
+
+        let ranges_am = Arc::new(Mutex::new(ranges));
+
+        self.sensory_tx.send(SensoryFrame::PathwayConfig(PathwayConfig::EncoderRanges(
+            ranges_am.clone()))).unwrap();
+        self.command_tx.send(Command::None).unwrap();
+    }
 }
 
 impl Default for Tyro {
@@ -167,7 +185,12 @@ fn print_something<T: Debug>(ptr: *const T, len: usize) {
 // ##########################################
 
 #[no_mangle]
-pub extern "C" fn push_vec_frame(tyro: &Tyro, ptr: *const libc::c_void, type_id: i32,
+pub extern "C" fn set_encoder_ranges(tyro: &Tyro, lo_ptr: *const f64, hi_ptr: *const f64, len: i32) {
+    tyro.set_encoder_ranges(lo_ptr, hi_ptr, len as usize);
+}
+
+#[no_mangle]
+pub extern "C" fn push_vec_frame(tyro: &Tyro, ptr: *const c_void, type_id: i32,
             dims: &[i64; 2]) {
     tyro.push_vec_frame(ptr, type_id, dims);
 }
@@ -178,7 +201,7 @@ pub extern "C" fn cycle(tyro: &Tyro) {
 }
 
 #[no_mangle]
-pub extern "C" fn print_array(ptr: *const libc::c_void, type_id: i32, dims: &[i64; 2]) {
+pub extern "C" fn print_array(ptr: *const c_void, type_id: i32, dims: &[i64; 2]) {
     // println!("print_array(): dims: {:?}", dims);
     let len = (dims[0] * dims[1]) as usize;
 
@@ -196,7 +219,7 @@ pub extern "C" fn new_tyro() -> Box<Tyro> {
 }
 
 #[no_mangle]
-pub extern "C" fn send_input(ptr: *const libc::c_void, dims: [i32; 2], type_id: i32) {
+pub extern "C" fn send_input(ptr: *const c_void, dims: [i32; 2], type_id: i32) {
 
 }
 

@@ -13,21 +13,24 @@ with Tyro() as tyro:
     # Reward cumulitive sum:
     ttl_reward = 0.0
 
-    env = gym.make('CartPole-v0')
+    # env = gym.make('CartPole-v0')
     # env = gym.make('LunarLander-v2')
     # env = gym.make('FrozenLake-v0')
-    # env = gym.make('Pendulum-v0')
+    env = gym.make('Pendulum-v0')
 
     # Set delta-t:
     env.dt = .006
 
+    tyro.set_encoder_ranges(env.observation_space.low, env.observation_space.high)
+
     print("Action space: {}".format(env.action_space))
-    print("Observation space: {} ({}, {})".format(env.observation_space, env.observation_space.low,
-        env.observation_space.high))
+    print("Observation space: {} ({})(\n\t{}, \n\t{}\n)".format(env.observation_space, env.observation_space.low.dtype,
+        env.observation_space.low, env.observation_space.high))
+    # print("Type of len(env.observation_space.low): {}".format(type(len(env.observation_space.low)))) // 'int'
 
     print('Running Simulation...\n')
 
-    for i_episode in range(1):
+    for i_episode in range(100):
         observation = env.reset()
         episode_reward = 0.0
 

@@ -18,13 +18,15 @@ pub fn define_lm_schemes() -> LayerMapSchemeList {
             .axn_layer("aff_in_0", map::FF_IN | LayerTags::uid(1000), AxonKind::Spatial)
             .axn_layer("aff_in_1", map::FF_IN | LayerTags::uid(1001), AxonKind::Spatial)
             .axn_layer("aff_in_2", map::FF_IN | LayerTags::uid(1002), AxonKind::Spatial)
+            .axn_layer("aff_in_3", map::FF_IN | LayerTags::uid(1003), AxonKind::Spatial)
             // .axn_layer("out", map::FF_FB_OUT, Spatial)
             .axn_layer("unused", map::UNUSED_TESTING, AxonKind::Spatial)
             .layer("mcols", 1, map::FF_FB_OUT, CellScheme::minicolumn("iv", "iii"))
             .layer("iv_inhib", 0, map::DEFAULT, CellScheme::inhibitory(4, "iv"))
 
             .layer("iv", 1, map::PSAL,
-                CellScheme::spiny_stellate(4, vec!["aff_in_0", "aff_in_1", "aff_in_2"], 300, 8))
+                CellScheme::spiny_stellate(4, vec!["aff_in_0", "aff_in_1", "aff_in_2", "aff_in_3"],
+                    300, 8))
 
             .layer("iii", 2, map::PTAL,
                 CellScheme::pyramidal(1, 4, vec!["iii"], 700, 8)
@@ -41,6 +43,8 @@ pub fn define_lm_schemes() -> LayerMapSchemeList {
             .layer("vector_1", 1, map::FF_OUT | LayerTags::uid(1001),
                 LayerKind::Axonal(AxonKind::Spatial))
             .layer("vector_2", 1, map::FF_OUT | LayerTags::uid(1002),
+                LayerKind::Axonal(AxonKind::Spatial))
+            .layer("vector_3", 1, map::FF_OUT | LayerTags::uid(1003),
                 LayerKind::Axonal(AxonKind::Spatial))
         )
 }
@@ -61,7 +65,9 @@ pub fn define_a_schemes() -> AreaSchemeList {
         //     None,
         // )
         .area_ext("v0b", "v0b_lm", ENCODE_SIZE,
-            InputScheme::VectorEncoder { ranges: vec![(-1.0, 1.0), (-1.0, 1.0), (-8.0, 8.0)] },
+            InputScheme::VectorEncoder { ranges: vec![
+                (-0.0, 0.0), (-0.0, 0.0), (-0.0, 0.0), (-0.0, 0.0)
+            ] },
             None,
             None,
         )
@@ -137,16 +143,16 @@ pub fn disable_stuff(cortex: &mut Cortex) {
     /* ######################### */
     /* ##### DISABLE STUFF ##### */
     /* ######################### */
-    for (_, area) in &mut cortex.areas {
-        // area.psal_mut().dens_mut().syns_mut().set_offs_to_zero_temp();
-        // area.bypass_inhib = true;
-        // area.bypass_filters = true;
-        // area.disable_pyrs = true;
+    // for (_, area) in &mut cortex.areas {
+    //     // area.psal_mut().dens_mut().syns_mut().set_offs_to_zero_temp();
+    //     // area.bypass_inhib = true;
+    //     // area.bypass_filters = true;
+    //     // area.disable_pyrs = true;
 
-        // area.disable_ssts = true;
-        // area.disable_mcols = true;
+    //     // area.disable_ssts = true;
+    //     // area.disable_mcols = true;
 
-        // area.disable_learning = true;
-        // area.disable_regrowth = true;
-    }
+    //     // area.disable_learning = true;
+    //     // area.disable_regrowth = true;
+    // }
 }
