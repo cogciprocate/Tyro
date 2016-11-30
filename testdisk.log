@@ -1,0 +1,32 @@
+
+
+Mon Oct  3 15:57:31 2016
+Command line: TestDisk
+
+TestDisk 6.14, Data Recovery Utility, July 2013
+Christophe GRENIER <grenier@cgsecurity.org>
+http://www.cgsecurity.org
+OS: Linux, kernel 3.19.0-58-generic (#64-Ubuntu SMP Thu Mar 17 18:30:04 UTC 2016) x86_64
+Compiler: GCC 4.9
+Compilation date: 2015-04-03T09:01:54
+ext2fs lib: 1.42.12, ntfs lib: libntfs-3g, reiserfs lib: none, ewf lib: none
+/dev/sda: LBA, HPA, LBA48, DCO support
+/dev/sda: size       937703088 sectors
+/dev/sda: user_max   937703088 sectors
+/dev/sda: native_max 937703088 sectors
+/dev/sdb: LBA, HPA, LBA48 support
+/dev/sdb: size       468862128 sectors
+/dev/sdb: user_max   468862128 sectors
+/dev/sdb: native_max 468862128 sectors
+/dev/sdc: LBA, HPA, LBA48, DCO support
+/dev/sdc: size       1953525168 sectors
+/dev/sdc: user_max   1953525168 sectors
+/dev/sdc: native_max 1953525168 sectors
+Warning: can't get size for Disk /dev/mapper/control - 0 B - 1 sectors, sector size=512
+Hard disk list
+Disk /dev/sda - 480 GB / 447 GiB - CHS 58369 255 63, sector size=512 - SanDisk SDSSDXPS480G, S/N:151846400147, FW:X21200RL
+Disk /dev/sdb - 240 GB / 223 GiB - CHS 29185 255 63, sector size=512 - SSD2SC240G1SA754D117-820, S/N:PNY37140000595980550, FW:N0530A
+Disk /dev/sdc - 1000 GB / 931 GiB - CHS 121601 255 63, sector size=512 - WDC WD1001FALS-00J7B0, S/N:WD-WMATV0877118, FW:05.00K05
+
+
+TestDisk exited normally.

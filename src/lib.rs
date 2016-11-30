@@ -47,8 +47,8 @@ impl Tyro {
         let (response_tx_vibi, response_rx_vibi) = mpsc::channel();
 
         let th_flywheel = thread::Builder::new().name("flywheel".to_string()).spawn(move || {
-            let mut flywheel = Flywheel::from_blueprint(command_rx, lm_schemes,
-                a_schemes, None);
+            let mut flywheel = Flywheel::from_blueprint(lm_schemes,
+                a_schemes, None, command_rx, "v1".into());
             flywheel.add_req_res_pair(request_rx, response_tx);
             flywheel.add_req_res_pair(request_rx_vibi, response_tx_vibi);
             // flywheel.add_sen_mot_pair(sensory_rx, motor_tx);

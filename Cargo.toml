@@ -8,8 +8,8 @@ name = "tyro"
 crate-type = ["cdylib", "rlib"]
 # crate-type = ["staticlib"]
 
-[dependencies.bismit]
-path = "/home/nick/src/github.com/cogciprocate/bismit"
+# [dependencies.bismit]
+# path = "/home/nick/src/github.com/cogciprocate/bismit"
 # git = "https://github.com/cogciprocate/bismit.git"
 
 [dependencies]

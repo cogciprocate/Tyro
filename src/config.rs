@@ -1,6 +1,6 @@
 use bismit::Cortex;
 use bismit::map::{self, LayerTags, LayerMapKind, LayerMapScheme, LayerMapSchemeList,
-    AreaSchemeList, CellScheme, InputScheme, AxonKind, LayerKind};
+    AreaSchemeList, CellScheme, InputScheme, AxonKind, LayerKind, AreaScheme};
 // use bismit::proto::{ProtolayerMap, ProtolayerMaps, ProtoareaMaps, Axonal, Spatial, Horizontal,
 //     Cortical, Thalamic, Protocell, Protofilter, Protoinput};
 
@@ -15,6 +15,8 @@ pub fn define_lm_schemes() -> LayerMapSchemeList {
             .axn_layer("motor_ctx", map::NS_IN | LayerTags::uid(MOTOR_UID), AxonKind::Horizontal)
             // .axn_layer("olfac", map::NS_IN | LayerTags::with_uid(OLFAC_UID), Horizontal)
             .axn_layer("eff_in", map::FB_IN, AxonKind::Spatial)
+            .axn_layer("aff_in", map::FF_IN, AxonKind::Spatial)
+            // .axn_layer("vector_in", map::FF_IN | LayerTags::uid(1000), AxonKind::Spatial)
             .axn_layer("aff_in_0", map::FF_IN | LayerTags::uid(1000), AxonKind::Spatial)
             .axn_layer("aff_in_1", map::FF_IN | LayerTags::uid(1001), AxonKind::Spatial)
             .axn_layer("aff_in_2", map::FF_IN | LayerTags::uid(1002), AxonKind::Spatial)
@@ -32,12 +34,14 @@ pub fn define_lm_schemes() -> LayerMapSchemeList {
                 CellScheme::pyramidal(1, 4, vec!["iii"], 700, 8)
                     .apical(vec!["eff_in"/*, "olfac"*/], 12))
         )
-        // .lmap(LayerMapScheme::new("v0_lm", LayerMapKind::Thalamic)
+        // .lmap(LayerMapScheme::new("v0_lm", LayerMapKind::Subcortical)
         //     .layer("spatial", 1, map::FF_OUT, LayerKind::Axonal(AxonKind::Spatial))
         //     .layer("horiz_ns", 1, map::NS_OUT | LayerTags::uid(MOTOR_UID),
         //         LayerKind::Axonal(AxonKind::Horizontal))
         // )
-        .lmap(LayerMapScheme::new("v0b_lm", LayerMapKind::Thalamic)
+        .lmap(LayerMapScheme::new("v0b_lm", LayerMapKind::Subcortical)
+            // .layer("vector", 4, map::FF_OUT | LayerTags::uid(1000),
+            //     LayerKind::Axonal(AxonKind::Spatial))
             .layer("vector_0", 1, map::FF_OUT | LayerTags::uid(1000),
                 LayerKind::Axonal(AxonKind::Spatial))
             .layer("vector_1", 1, map::FF_OUT | LayerTags::uid(1001),
@@ -64,18 +68,25 @@ pub fn define_a_schemes() -> AreaSchemeList {
         //     None,
         //     None,
         // )
-        .area_ext("v0b", "v0b_lm", ENCODE_SIZE,
-            InputScheme::VectorEncoder { ranges: vec![
-                (-0.0, 0.0), (-0.0, 0.0), (-0.0, 0.0), (-0.0, 0.0)
-            ] },
-            None,
-            None,
+        // .area_ext("v0b", "v0b_lm", ENCODE_SIZE,
+        //     InputScheme::VectorEncoder { ranges: vec![
+        //         (-0.0, 0.0), (-0.0, 0.0), (-0.0, 0.0), (-0.0, 0.0)
+        //     ] },
+        //     None,
+        //     None,
+        // )
+        // .area("v1", "visual", AREA_SIDE,
+        //     // Some(vec![FilterScheme::new("retina", None)]),
+        //     None,
+        //     // Some(vec!["v0"]),
+        //     Some(vec!["v0b"]),
+        // )
+
+        .area(AreaScheme::new("v0b", "v0b_lm", ENCODE_SIZE)
+            .input(InputScheme::VectorEncoder { ranges: vec![(-0.0, 0.0), (-0.0, 0.0), (-0.0, 0.0), (-0.0, 0.0)] })
         )
-        .area("v1", "visual", AREA_SIDE,
-            // Some(vec![FilterScheme::new("retina", None)]),
-            None,
-            // Some(vec!["v0"]),
-            Some(vec!["v0b"]),
+        .area(AreaScheme::new("v1", "visual", AREA_SIDE)
+            .eff_areas(vec!["v0b"])
         )
 
         // .area("b1", "visual", AREA_SIDE,
