@@ -63,6 +63,7 @@ impl Tyro {
 
         // Wait for the flywheel to initialize bismit:
         request_tx.send(Request::CurrentIter).unwrap();
+
         match response_rx.recv().unwrap() {
             Response::CurrentIter(_) => (),
             _ => panic!("Tyro::new(): Error initializing flywheel."),
@@ -134,10 +135,10 @@ impl Tyro {
             ranges.push((lo[i] as f32, hi[i] as f32));
         }
 
-        let ranges_am = Arc::new(Mutex::new(ranges));
+        // let ranges_am = Arc::new(Mutex::new(ranges));
 
         self.sensory_tx.send(SensoryFrame::PathwayConfig(PathwayConfig::EncoderRanges(
-            ranges_am.clone()))).unwrap();
+            ranges))).unwrap();
         self.command_tx.send(Command::None).unwrap();
     }
 }
